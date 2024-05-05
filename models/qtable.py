@@ -12,19 +12,19 @@ class QTable(AbstractModel):
     def __init__(self, game, **kwargs):
         super().__init__(game, name="QTableModel", **kwargs) # Create a new prediction model for 'game'.
         self.Q = dict()  # table with values for state and action 
+        self.epsilon_values = []  # List to store epsilon values
+        self.reward_history = []  # Store reward history
 
     def train(self, stop_at_convergence=False, **kwargs): # Train the model.
-        
         gamma = kwargs.get("gamma ", 0.95) # gamma (discount rate) of 0.90
-        epsilon = kwargs.get("epsilon", 0.10) # epsilon (exploration rate) preference for exploring of 0.10 
-        exploration_decay = kwargs.get("exploration_decay", 0.995)  # exploration rate reduction after each random step of 0.995 (0.995 = 99.5%)
+        epsilon = kwargs.get("epsilon", 0.1) # epsilon (exploration rate) preference for exploring of 0.10 
+        exploration_decay = kwargs.get("exploration_decay", 0.995)  # exploration rate reduction after each random step of 0.995
         learning_rate = kwargs.get("learning_rate", 0.7) # learning rate (alpha) preference for using new knowledge of 0.7
-        n_eval_episodes = max(kwargs.get("n_eval_episodes ", 1000), 1) # number of training games to play
+        n_eval_episodes = max(kwargs.get("n_eval_episodes ", 100), 1) # number of training games to play
         check_iterations_every = kwargs.get("check_iterations_every", self.default_check_iterations_every) # check for convergence every # episodes
         
         # variables that are used for recording the training process
         total_reward = 0 # cumulative reward
-        reward_history = [] # history of cumulative rewards
         win_history = [] # history of win rate
 
         starting_points = list() # list of starting points
@@ -61,6 +61,7 @@ class QTable(AbstractModel):
                     self.Q[(state, action)] = 0.0
                     
                 # calculate the Q value for the state and action using the formula
+                #Q[s,a] = Q[s,a] + eta*(r + gamma*np.nanmax(Q[s_next,:]) - Q[s,a]) where eta is learning rate, gammma is discount factor
                 max_next_Q = max([self.Q.get((next_state, a), 0.0) for a in self.environment.available_actions])
                 
                 # update the Q value for the state and action using the formula
@@ -75,7 +76,7 @@ class QTable(AbstractModel):
                 self.environment.render_q_values(self)
                 
             # append the total reward to the reward history    
-            reward_history.append(total_reward)
+            self.reward_history.append(total_reward)
 
             logging.info("iteration: {:d}/{:d} | status: {:4s} | e: {:.5f}"
                          .format(iteration, n_eval_episodes , status.name, epsilon))
@@ -88,10 +89,11 @@ class QTable(AbstractModel):
                     break
 
             epsilon *= exploration_decay  # explore less as training progresses
+            self.epsilon_values.append(epsilon)  # Store epsilon value
 
         logging.info("iterations: {:d} | time spent: {}".format(iteration, datetime.now() - start_time))
 
-        return reward_history, win_history, iteration, datetime.now() - start_time
+        return self.reward_history, win_history, iteration, datetime.now() - start_time
 
     # get the Q values for all actions for a certain state to then predict the action to take based on the Q values 
     def q_values(self, state):
@@ -107,3 +109,10 @@ class QTable(AbstractModel):
 
         actions = np.nonzero(q_values == np.max(q_values))[0]
         return random.choice(actions)
+    
+    # Method to get epsilon values
+    def get_epsilon_values(self):
+        return self.epsilon_values
+    
+    def get_reward_history(self):
+        return self.reward_history

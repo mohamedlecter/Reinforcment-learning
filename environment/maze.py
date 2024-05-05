@@ -7,34 +7,27 @@ class MazeCell(IntEnum): # Enumerate the possible cell types
     EMPTY = 0 
     WALL = 1  
     AGENT = 2  
-
-
 class AgentAction(IntEnum):  # Enumerate the possible actions
     MOVE_LEFT = 0 
     MOVE_RIGHT = 1
     MOVE_UP = 2
     MOVE_DOWN = 3
-
-
 class RenderOption(Enum):  # Enumerate the possible rendering options
     NONE = 0 
     TRAINING_MODE = 1
     MOVEMENT = 2
     
-
-
 class GameStatus(Enum):  # Enumerate the possible game statuses
     WIN = 0
     LOSE = 1
     PLAYING = 2
     
-    
 class MazeGame:
     available_actions = [AgentAction.MOVE_LEFT, AgentAction.MOVE_RIGHT, AgentAction.MOVE_UP, AgentAction.MOVE_DOWN]  # all possible actions
-    exit_reward = 10.0  # exit reward
-    move_penalty = -0.05  # penalty for each move
-    visited_penalty = -0.25 
-    wrong_move_penalty = -0.75  # penalty for trying to move into a wall or out of the maze
+    exit_reward = 7.0  # exit reward
+    move_penalty = -0.10  # penalty for each move
+    visited_penalty = -0.30 
+    wrong_move_penalty = -0.70  # penalty for trying to move into a wall or out of the maze
     
     def __init__(self, maze, starting_cell=(0, 0), exit_cell=None):
         self.maze = maze
@@ -57,7 +50,6 @@ class MazeGame:
         self.__action_ax = None  # axes for rendering the best action per cell
 
         self.reset(starting_cell)
-        
         
     def reset(self, starting_cell=(0, 0)):
         """

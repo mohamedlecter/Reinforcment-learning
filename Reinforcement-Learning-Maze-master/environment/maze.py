@@ -151,7 +151,6 @@ class Maze:
         if self.__render in (Render.MOVES, Render.TRAINING):
             if self.__ax1 is None:
                 fig, self.__ax1 = plt.subplots(1, 1, tight_layout=True)
-                fig.canvas.set_window_title("Maze")
 
         plt.show(block=False)
 
