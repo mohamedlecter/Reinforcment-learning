@@ -76,6 +76,8 @@ class SARSATable(AbstractModel):
 
             # Append total reward to reward history
             self.reward_history.append(total_reward)
+            logging.info("iteration: {:d}/{:d} | status: {:4s} | e: {:.5f}"
+                         .format(iteration, n_eval_episodes , status.name, epsilon))
 
             # Check for convergence every few episodes
             if iteration % check_iterations_every == 0:
